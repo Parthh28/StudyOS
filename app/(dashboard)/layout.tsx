@@ -83,13 +83,20 @@ export default async function DashboardLayout({
     <div className="bg-background text-foreground min-h-screen flex overflow-x-hidden selection:bg-indigo/30 selection:text-indigo">
       {/* SideNavBar (Desktop) */}
       <nav className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-[#131b2e] dark:bg-[#131b2e] border-r border-white/5 shadow-2xl py-8 gap-8 z-[60]">
+        
+        {/* StudyOS Logo */}
+        <div className="px-6 flex justify-center w-full">
+          <img src="/logo.png" alt="StudyOS Logo" className="h-14 w-auto object-contain" />
+        </div>
+
+        {/* User Profile */}
         <div className="px-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+          <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
             <span className="text-lg">{firstName.charAt(0)}</span>
           </div>
-          <div>
-            <h2 className="text-sm font-semibold text-white">{profile?.full_name || 'Student'}</h2>
-            <p className="text-xs font-semibold tracking-wider text-indigo uppercase">Deep Focus Mode</p>
+          <div className="overflow-hidden">
+            <h2 className="text-sm font-semibold text-white truncate">{profile?.full_name || 'Student'}</h2>
+            <p className="text-xs font-semibold tracking-wider text-indigo uppercase truncate">Deep Focus</p>
           </div>
         </div>
 
@@ -110,7 +117,8 @@ export default async function DashboardLayout({
               firstName={firstName} 
               subjects={cleanedSubjects || []} 
             />
-            <span className="md:hidden text-lg sm:text-xl font-bold text-indigo">StudyOS</span>
+            {/* Mobile Logo */}
+            <img src="/logo.png" alt="StudyOS Logo" className="md:hidden h-8 w-auto object-contain" />
             <div className="hidden md:block">
               <h1 className="text-2xl font-bold text-white">Welcome back, {firstName}</h1>
               <p className="text-sm text-text-muted">{currentDate}</p>
