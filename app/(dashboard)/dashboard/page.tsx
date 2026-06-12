@@ -49,8 +49,63 @@ export default async function DashboardPage() {
   const syllabusProgress = totalTopics === 0 ? 0 : completedTopics / totalTopics
   const syllabusRingOffset = 264 * (1 - syllabusProgress)
 
-  // Find a "Next Up" topic (just picking the first subject with incomplete topics for now, or a random one)
-  const nextSubject = subjectStats.find((s: any) => s.completed_topics < s.total_topics)
+  // Smart Recommendation Engine for "Next Up"
+  let nextSubject: any = null
+  let highestScore = -1
+  let recommendationReason = 'Continue your progress'
+
+  subjectStats.forEach((subject: any) => {
+    // Skip if all topics are completed (unless they have no topics yet)
+    if (subject.completed_topics >= subject.total_topics && subject.total_topics > 0) return
+
+    let score = 0
+    let reasons: string[] = []
+
+    // 1. Exam Proximity (Urgency)
+    const subjectExams = (exams || []).filter((e: any) => e.subject_id === subject.subject_id)
+    if (subjectExams.length > 0) {
+      const nextExam = subjectExams.sort((a: any, b: any) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime())[0]
+      const daysUntilExam = (new Date(nextExam.exam_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24)
+      
+      if (daysUntilExam >= 0 && daysUntilExam < 7) {
+        score += 50
+        reasons.push('Exam coming up soon')
+      } else if (daysUntilExam >= 0 && daysUntilExam < 14) {
+        score += 20
+        reasons.push('Exam approaching')
+      }
+    }
+
+    // 2. Neglect (Spaced Rotation)
+    const lastStudied = (recentSessions || []).find((s: any) => s.subject_id === subject.subject_id || (s.subject && s.subject.name === subject.subject_name))
+    if (!lastStudied) {
+      score += 15
+      reasons.push('Not studied recently')
+    } else {
+      const daysSinceStudied = (new Date().getTime() - new Date(lastStudied.started_at).getTime()) / (1000 * 3600 * 24)
+      if (daysSinceStudied > 3) {
+        score += 10
+        reasons.push('Not studied recently')
+      }
+    }
+
+    // 3. Weakness (Needs Revision)
+    const subjectWeakTopics = (weakTopics || []).filter((t: any) => t.subject_id === subject.subject_id)
+    if (subjectWeakTopics.length > 0) {
+      score += subjectWeakTopics.length * 5
+      reasons.push(`${subjectWeakTopics.length} weak topic${subjectWeakTopics.length > 1 ? 's' : ''} to review`)
+    }
+
+    // 4. Progress Balancing
+    const progress = subject.total_topics > 0 ? (subject.completed_topics / subject.total_topics) : 0
+    score += (1 - progress) * 10
+
+    if (score > highestScore) {
+      highestScore = score
+      nextSubject = subject
+      recommendationReason = reasons.length > 0 ? reasons[0] : 'Continue your progress'
+    }
+  })
 
   return (
     <div className="flex-1 p-5 md:p-10 max-w-[1200px] w-full mx-auto">
@@ -78,13 +133,16 @@ export default async function DashboardPage() {
                 </h2>
                 <p className="text-text-muted max-w-md">
                   {nextSubject 
-                    ? `Continue working on ${nextSubject.subject_name}. You have completed ${nextSubject.completed_topics} out of ${nextSubject.total_topics} topics.`
+                    ? `${recommendationReason}. You have completed ${nextSubject.completed_topics} out of ${nextSubject.total_topics} topics.`
                     : 'You have completed all topics in your current subjects. Great job!'}
                 </p>
               </div>
-              <button className="shrink-0 px-6 py-3 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all transform active:scale-95 duration-200 glow-primary">
+              <Link 
+                href={`?timer=open${nextSubject ? `&subjectId=${nextSubject.subject_id}` : ''}`}
+                className="shrink-0 px-6 py-3 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all transform active:scale-95 duration-200 glow-primary inline-flex items-center justify-center"
+              >
                 Start Study Session
-              </button>
+              </Link>
             </div>
           </section>
 

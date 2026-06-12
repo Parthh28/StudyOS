@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Calendar, Plus, Target, Flame, Loader2, X } from 'lucide-react'
-import { addExam } from '@/lib/actions/data'
+import { Calendar, Plus, Target, Flame, Loader2, X, Pencil, Trash2 } from 'lucide-react'
+import { addExam, updateExam, deleteExam } from '@/lib/actions/data'
 import { differenceInDays, parseISO } from 'date-fns'
 
 type ExamWidgetProps = {
@@ -15,12 +15,44 @@ export function ExamCountdownWidget({ exams, subjectStats }: ExamWidgetProps) {
   const [isPending, startTransition] = useTransition()
   
   // Form state
+  const [editingExamId, setEditingExamId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [subjectId, setSubjectId] = useState(subjectStats[0]?.subject_id || '')
   const [examDate, setExamDate] = useState('')
   const [error, setError] = useState('')
 
-  const handleAddExam = async (e: React.FormEvent) => {
+  const openAddModal = () => {
+    setEditingExamId(null)
+    setName('')
+    setSubjectId(subjectStats[0]?.subject_id || '')
+    setExamDate('')
+    setError('')
+    setIsOpen(true)
+  }
+
+  const openEditModal = (exam: any) => {
+    setEditingExamId(exam.id)
+    setName(exam.name)
+    setSubjectId(exam.subject_id)
+    setExamDate(exam.exam_date)
+    setError('')
+    setIsOpen(true)
+  }
+
+  const handleDeleteExam = async (id: string) => {
+    if (confirm('Are you sure you want to delete this exam?')) {
+      startTransition(async () => {
+        const res = await deleteExam(id)
+        if (res.success) {
+          setIsOpen(false)
+        } else {
+          setError(res.error || 'Failed to delete exam')
+        }
+      })
+    }
+  }
+
+  const handleSaveExam = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name || !subjectId || !examDate) {
       setError('Please fill all fields')
@@ -29,13 +61,17 @@ export function ExamCountdownWidget({ exams, subjectStats }: ExamWidgetProps) {
 
     setError('')
     startTransition(async () => {
-      const res = await addExam({ name, subject_id: subjectId, exam_date: examDate })
+      const res = editingExamId 
+        ? await updateExam(editingExamId, { name, subject_id: subjectId, exam_date: examDate })
+        : await addExam({ name, subject_id: subjectId, exam_date: examDate })
+        
       if (res.success) {
         setIsOpen(false)
         setName('')
         setExamDate('')
+        setEditingExamId(null)
       } else {
-        setError(res.error || 'Failed to add exam')
+        setError(res.error || 'Failed to save exam')
       }
     })
   }
@@ -74,7 +110,7 @@ export function ExamCountdownWidget({ exams, subjectStats }: ExamWidgetProps) {
             <p className="text-sm text-text-muted mt-1">Calculated velocity for upcoming exams</p>
           </div>
           <button 
-            onClick={() => setIsOpen(true)}
+            onClick={openAddModal}
             className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-text-muted hover:text-white transition-colors"
             title="Add Exam"
           >
@@ -85,14 +121,19 @@ export function ExamCountdownWidget({ exams, subjectStats }: ExamWidgetProps) {
         {enrichedExams.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
             {enrichedExams.map(exam => (
-              <div key={exam.id} className="bg-surface-2/40 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:bg-surface-2/60 transition-colors">
+              <div key={exam.id} className="group bg-surface-2/40 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:bg-surface-2/60 transition-colors">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: exam.subjectColor }}></div>
                       <span className="text-[10px] font-bold tracking-widest text-text-muted uppercase">{exam.subjectName}</span>
                     </div>
-                    <h4 className="text-md font-semibold text-white">{exam.name}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-md font-semibold text-white">{exam.name}</h4>
+                      <button onClick={() => openEditModal(exam)} className="text-text-muted hover:text-white transition-colors p-1 rounded-full hover:bg-surface-2 opacity-0 group-hover:opacity-100 focus:opacity-100">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                   <div className="text-right">
                     <span className="text-2xl font-bold text-white leading-none">{exam.daysLeft}</span>
@@ -133,9 +174,9 @@ export function ExamCountdownWidget({ exams, subjectStats }: ExamWidgetProps) {
             >
               <X className="w-5 h-5" />
             </button>
-            <h3 className="text-xl font-bold text-white mb-6">Add Exam</h3>
+            <h3 className="text-xl font-bold text-white mb-6">{editingExamId ? 'Edit Exam' : 'Add Exam'}</h3>
             
-            <form onSubmit={handleAddExam} className="space-y-4">
+            <form onSubmit={handleSaveExam} className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-text-muted uppercase tracking-widest block mb-2">Subject</label>
                 <select 
@@ -175,13 +216,25 @@ export function ExamCountdownWidget({ exams, subjectStats }: ExamWidgetProps) {
 
               {error && <p className="text-red-500 text-xs font-semibold">{error}</p>}
 
-              <button 
-                type="submit"
-                disabled={isPending}
-                className="w-full py-3 mt-2 rounded-lg gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 glow-primary disabled:opacity-50"
-              >
-                {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Exam'}
-              </button>
+              <div className="flex gap-2 mt-2">
+                <button 
+                  type="submit"
+                  disabled={isPending}
+                  className="flex-1 py-3 rounded-lg gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 glow-primary disabled:opacity-50"
+                >
+                  {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingExamId ? 'Update Exam' : 'Create Exam')}
+                </button>
+                {editingExamId && (
+                  <button 
+                    type="button"
+                    onClick={() => handleDeleteExam(editingExamId)}
+                    disabled={isPending}
+                    className="px-4 py-3 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 text-sm font-semibold transition-all flex items-center justify-center disabled:opacity-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </div>

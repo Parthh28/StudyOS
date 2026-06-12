@@ -430,3 +430,54 @@ export async function getNotifications() {
   }
 }
 
+/**
+ * Updates an existing exam.
+ */
+export async function updateExam(id: string, data: { name: string; subject_id: string; exam_date: string }) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('exams')
+    .update(data)
+    .eq('id', id)
+    .eq('user_id', user.id) // Ensure they own it
+
+  if (error) {
+    console.error('Failed to update exam:', error)
+    return { success: false, error: 'Failed to update exam' }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
+/**
+ * Deletes an existing exam.
+ */
+export async function deleteExam(id: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('exams')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id) // Ensure they own it
+
+  if (error) {
+    console.error('Failed to delete exam:', error)
+    return { success: false, error: 'Failed to delete exam' }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
