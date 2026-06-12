@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
+import { ServiceWorkerRegistrar } from '@/components/service-worker-registrar'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -49,6 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground antialiased">
+        <ServiceWorkerRegistrar />
         <Providers>{children}</Providers>
       </body>
     </html>
