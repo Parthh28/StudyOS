@@ -95,15 +95,6 @@ export default async function AnalyticsPage() {
     }
   }
 
-  // If the user hasn't logged any sessions yet, populate with realistic dummy data for display purposes
-  const isGraphEmpty = dailyTotals.every(val => val === 0)
-  if (isGraphEmpty) {
-    const dummyPattern = [2.5, 1.0, 3.5, 4.0, 0, 2.0, 5.5, 3.0, 1.5, 4.5, 6.0, 2.5, 5.0, 3.5]
-    dummyPattern.forEach((val, i) => {
-      dailyTotals[i] = val
-    })
-  }
-
   // Dynamic scaling for Y axis
   const maxHours = Math.max(6, ...dailyTotals) // minimum 6h max scale for visual aesthetics
   
@@ -139,7 +130,7 @@ export default async function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Top Row: Completion Metrics Cards */}
-        <div className="col-span-1 lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="col-span-1 lg:col-span-12 grid grid-cols-1 md:grid-cols-1 gap-6">
           
           {/* Card 1: Syllabus Completion */}
           <div className="glass rounded-xl p-6 relative overflow-hidden flex flex-col justify-between h-40 group hover:border-white/30 transition-all hover:shadow-[0_0_20px_rgba(99,102,241,0.15)]">
@@ -150,58 +141,12 @@ export default async function AnalyticsPage() {
             <div className="mt-4">
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-white">{syllabusProgress}%</span>
-                <span className="text-sm font-semibold text-success flex items-center"><TrendingUp className="w-4 h-4 mr-1" /> +5%</span>
               </div>
               <div className="w-full bg-surface-2 h-1.5 rounded-full mt-3 overflow-hidden">
                 <div className="gradient-primary h-full rounded-full transition-all duration-1000" style={{ width: `${syllabusProgress}%` }}></div>
               </div>
             </div>
             <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-indigo/20 rounded-full blur-xl"></div>
-          </div>
-
-          {/* Card 2: Avg Grade Trend */}
-          <div className="glass rounded-xl p-6 relative overflow-hidden flex flex-col justify-between h-40 group hover:border-white/30 transition-all hover:shadow-[0_0_20px_rgba(139,92,246,0.15)]">
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold tracking-widest text-text-muted uppercase">Avg Grade Trend</span>
-              <TrendingUp className="text-violet w-5 h-5" />
-            </div>
-            <div className="mt-4">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-white">A-</span>
-                <span className="text-sm text-text-muted">Target: A</span>
-              </div>
-              <div className="h-8 mt-2 flex items-end gap-1 opacity-70">
-                <div className="w-full bg-violet/20 h-[40%] rounded-t-sm"></div>
-                <div className="w-full bg-violet/30 h-[50%] rounded-t-sm"></div>
-                <div className="w-full bg-violet/40 h-[45%] rounded-t-sm"></div>
-                <div className="w-full bg-violet/50 h-[60%] rounded-t-sm"></div>
-                <div className="w-full bg-violet/70 h-[75%] rounded-t-sm"></div>
-                <div className="w-full bg-violet h-[85%] rounded-t-sm"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Focus Score */}
-          <div className="glass rounded-xl p-6 relative overflow-hidden flex flex-col justify-between h-40 border-indigo/20 bg-indigo/5 group hover:border-indigo/40 transition-all shadow-[0_0_15px_rgba(99,102,241,0.1)]">
-            <div className="flex justify-between items-start">
-              <span className="text-xs font-semibold tracking-widest text-indigo uppercase">Focus Score</span>
-              <BrainCircuit className="text-indigo w-5 h-5" />
-            </div>
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-indigo">92</span>
-                  <span className="text-sm text-text-muted">/ 100</span>
-                </div>
-                <p className="text-xs font-semibold tracking-widest text-text-muted mt-1 uppercase">Excellent State</p>
-              </div>
-              <div className="relative w-16 h-16">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <path className="text-surface-2" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4"></path>
-                  <path className="text-indigo" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="92, 100" strokeLinecap="round" strokeWidth="4"></path>
-                </svg>
-              </div>
-            </div>
           </div>
 
         </div>

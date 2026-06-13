@@ -122,9 +122,9 @@ export default async function SubjectDetailPage({ params }: { params: Promise<{ 
           <button className="flex-1 min-w-[150px] py-3 px-6 rounded-lg bg-transparent border border-white/10 text-white hover:bg-white/5 font-semibold transition-all flex items-center justify-center gap-2">
             <Download className="w-5 h-5" /> Syllabus
           </button>
-          <button className="p-3 rounded-lg border border-white/10 text-white hover:text-indigo hover:border-indigo/50 transition-all flex items-center justify-center">
+          <Link href="/analytics" className="p-3 rounded-lg border border-white/10 text-white hover:text-indigo hover:border-indigo/50 transition-all flex items-center justify-center">
             <BarChart2 className="w-6 h-6" />
-          </button>
+          </Link>
         </div>
         
       </div>

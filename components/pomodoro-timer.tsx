@@ -15,6 +15,7 @@ export function PomodoroTimer({ subjects }: { subjects: Subject[] }) {
   
   const [mode, setMode] = useState<'focus' | 'break'>('focus')
   const [focusDurationMins, setFocusDurationMins] = useState(25)
+  const [breakDurationMins, setBreakDurationMins] = useState(5)
   const [timeLeft, setTimeLeft] = useState(25 * 60)
   const [isActive, setIsActive] = useState(false)
   const [selectedSubject, setSelectedSubject] = useState<string>(subjects[0]?.id || '')
@@ -22,7 +23,7 @@ export function PomodoroTimer({ subjects }: { subjects: Subject[] }) {
   const [isLogging, setIsLogging] = useState(false)
   const [message, setMessage] = useState('')
 
-  const initialTime = mode === 'focus' ? focusDurationMins * 60 : 5 * 60
+  const initialTime = mode === 'focus' ? focusDurationMins * 60 : breakDurationMins * 60
 
   // Auto-open timer from URL parameters (e.g. from Resume Learning button)
   useEffect(() => {
@@ -44,12 +45,13 @@ export function PomodoroTimer({ subjects }: { subjects: Subject[] }) {
     }
   }, [searchParams, pathname, router])
 
-  // Sync timeLeft when focusDurationMins changes (only if timer is stopped and in focus mode)
+  // Sync timeLeft when duration changes (only if timer is stopped)
   useEffect(() => {
-    if (!isActive && mode === 'focus') {
-      setTimeLeft(focusDurationMins * 60)
+    if (!isActive) {
+      if (mode === 'focus') setTimeLeft(focusDurationMins * 60)
+      else setTimeLeft(breakDurationMins * 60)
     }
-  }, [focusDurationMins, isActive, mode])
+  }, [focusDurationMins, breakDurationMins, isActive, mode])
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
@@ -76,7 +78,7 @@ export function PomodoroTimer({ subjects }: { subjects: Subject[] }) {
   const switchMode = (newMode: 'focus' | 'break') => {
     setMode(newMode)
     setIsActive(false)
-    setTimeLeft(newMode === 'focus' ? focusDurationMins * 60 : 5 * 60)
+    setTimeLeft(newMode === 'focus' ? focusDurationMins * 60 : breakDurationMins * 60)
   }
 
   const handleLogSession = async () => {
@@ -218,21 +220,36 @@ export function PomodoroTimer({ subjects }: { subjects: Subject[] }) {
               {/* Duration Slider */}
               <div>
                 <label className="text-xs font-semibold text-text-muted uppercase tracking-widest mb-2 flex justify-between">
-                  <span>Focus Duration</span>
+                  <span>{mode === 'focus' ? 'Focus Duration' : 'Break Duration'}</span>
                   <span className="text-white">
-                    {focusDurationMins >= 60 ? `${Math.floor(focusDurationMins/60)}h ${focusDurationMins%60}m` : `${focusDurationMins}m`}
+                    {mode === 'focus' 
+                      ? (focusDurationMins >= 60 ? `${Math.floor(focusDurationMins/60)}h ${focusDurationMins%60}m` : `${focusDurationMins}m`)
+                      : `${breakDurationMins}m`}
                   </span>
                 </label>
-                <input 
-                  type="range" 
-                  min="25" 
-                  max="300" 
-                  step="5"
-                  value={focusDurationMins}
-                  onChange={(e) => setFocusDurationMins(Number(e.target.value))}
-                  disabled={isActive}
-                  className="w-full accent-indigo cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                />
+                {mode === 'focus' ? (
+                  <input 
+                    type="range" 
+                    min="25" 
+                    max="300" 
+                    step="5"
+                    value={focusDurationMins}
+                    onChange={(e) => setFocusDurationMins(Number(e.target.value))}
+                    disabled={isActive}
+                    className="w-full accent-indigo cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                ) : (
+                  <input 
+                    type="range" 
+                    min="5" 
+                    max="30" 
+                    step="5"
+                    value={breakDurationMins}
+                    onChange={(e) => setBreakDurationMins(Number(e.target.value))}
+                    disabled={isActive}
+                    className="w-full accent-violet cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                )}
               </div>
 
               {/* Subject Selector */}
