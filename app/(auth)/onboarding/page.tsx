@@ -130,9 +130,8 @@ export default function OnboardingPage() {
       })
       if (profileError) throw profileError
 
-      // 2. Seed Subjects, Units, and Topics
-      const { success, error: seedError } = await seedUserSubjects(user.id, selectedSubjects)
-      if (!success) throw new Error(seedError || 'Failed to seed subjects')
+      // Note: Subjects are now global, so we no longer seed subjects per-user.
+      // In the future, we can save `selectedSubjects` to a user_subjects mapping table.
 
       toast.success(`Welcome to StudyOS, ${fullName.split(' ')[0]}! 🎓`)
       router.push('/dashboard')

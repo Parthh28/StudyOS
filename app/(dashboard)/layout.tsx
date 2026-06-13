@@ -39,7 +39,12 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single()
 
-  const firstName = profile?.full_name?.split(' ')[0] || 'Student'
+  // If user has no profile, force them to complete onboarding
+  if (!profile) {
+    redirect('/onboarding')
+  }
+
+  const firstName = profile.full_name?.split(' ')[0] || 'Student'
   
   // Format current date "October 24, 2023"
   const currentDate = new Intl.DateTimeFormat('en-US', {
