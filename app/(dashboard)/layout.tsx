@@ -54,24 +54,7 @@ export default async function DashboardLayout({
     .select('id, name, code, created_at')
     .order('created_at', { ascending: true })
 
-  // Auto-cleanup duplicates (temporary fix)
-  if (subjects) {
-    const seen = new Set()
-    const toDelete: string[] = []
-    
-    subjects.forEach((s) => {
-      if (seen.has(s.code)) {
-        toDelete.push(s.id)
-      } else {
-        seen.add(s.code)
-      }
-    })
-    
-    if (toDelete.length > 0) {
-      console.log('Cleaning up duplicate subjects:', toDelete)
-      await supabase.from('subjects').delete().in('id', toDelete)
-    }
-  }
+
 
   // Refetch cleaned subjects for Pomodoro
   const { data: cleanedSubjects } = await supabase
