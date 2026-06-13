@@ -121,22 +121,39 @@ export async function getDashboardData() {
 
   if (!user) return { success: false, data: null }
 
-  // 1. Get profile stats
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, weekly_goal_hours')
-    .eq('id', user.id)
-    .single()
+  // Calculate start of current week in JS (Monday to Sunday)
+  const now = new Date()
+  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)))
+  startOfWeek.setHours(0, 0, 0, 0)
 
-  // 2. Get subject stats (using the secure view we created)
-  const { data: subjectStatsRaw } = await supabase
-    .from('subject_stats')
-    .select('*')
-    .order('subject_name')
+  // Execute all independent queries in parallel to drastically reduce load time
+  const [
+    { data: profile },
+    { data: subjectStatsRaw },
+    { data: subjects },
+    { data: recentSessions },
+    { data: thisWeekSessions },
+    { data: todos },
+    { data: exams }
+  ] = await Promise.all([
+    // 1. Get profile stats
+    supabase.from('profiles').select('full_name, weekly_goal_hours').eq('id', user.id).single(),
+    // 2. Get subject stats
+    supabase.from('subject_stats').select('*').order('subject_name'),
+    // Merge missing visual properties
+    supabase.from('subjects').select('id, color, icon, code'),
+    // 3. Get recent study sessions
+    supabase.from('study_sessions').select('*, subject:subjects(name, color), topic:topics(name)').order('started_at', { ascending: false }).limit(5),
+    // 4. Get this week's sessions
+    supabase.from('study_sessions').select('duration_mins').gte('started_at', startOfWeek.toISOString()),
+    // 5. Get To-Dos
+    supabase.from('todos').select('*').order('created_at', { ascending: true }),
+    // 6. Get Exams
+    supabase.from('exams').select('*').eq('status', 'upcoming').order('exam_date', { ascending: true })
+  ])
 
-  // Merge missing visual properties (color, icon, code) that aren't in the view
-  const { data: subjects } = await supabase.from('subjects').select('id, color, icon, code')
-  
+  const hoursStudiedThisWeek = (thisWeekSessions || []).reduce((acc, curr) => acc + (curr.duration_mins || 0), 0) / 60
+
   const subjectStats = subjectStatsRaw?.map(stat => {
     const sub = subjects?.find(s => s.id === stat.subject_id)
     return {
@@ -146,39 +163,6 @@ export async function getDashboardData() {
       subject_code: sub?.code || 'SUBJ'
     }
   })
-
-  // 3. Get recent study sessions
-  const { data: recentSessions } = await supabase
-    .from('study_sessions')
-    .select('*, subject:subjects(name, color), topic:topics(name)')
-    .order('started_at', { ascending: false })
-    .limit(5)
-    
-  // 4. Calculate total hours studied this week (Monday to Sunday)
-  // Get start of current week in JS
-  const now = new Date()
-  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)))
-  startOfWeek.setHours(0, 0, 0, 0)
-  
-  const { data: thisWeekSessions } = await supabase
-    .from('study_sessions')
-    .select('duration_mins')
-    .gte('started_at', startOfWeek.toISOString())
-    
-  const hoursStudiedThisWeek = (thisWeekSessions || []).reduce((acc, curr) => acc + (curr.duration_mins || 0), 0) / 60
-
-  // 5. Get To-Dos
-  const { data: todos } = await supabase
-    .from('todos')
-    .select('*')
-    .order('created_at', { ascending: true })
-
-  // 6. Get Exams
-  const { data: exams } = await supabase
-    .from('exams')
-    .select('*')
-    .eq('status', 'upcoming')
-    .order('exam_date', { ascending: true })
 
   return {
     success: true,
