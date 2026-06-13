@@ -25,13 +25,15 @@ export async function updateTopicStatus(
   }
 
   const { error } = await supabase
-    .from('topics')
-    .update(updatePayload)
-    .eq('id', topicId)
+    .from('topic_progress')
+    .upsert(
+      { topic_id: topicId, user_id: user.id, ...updatePayload },
+      { onConflict: 'user_id,topic_id' }
+    )
 
   if (error) {
-    console.error('Failed to update topic:', error)
-    return { success: false, error: 'Failed to update topic' }
+    console.error('Failed to update topic progress:', error)
+    return { success: false, error: 'Failed to update topic progress' }
   }
 
   revalidatePath('/dashboard')
@@ -62,9 +64,11 @@ export async function updateTopicChecklist(
   }
 
   const { error } = await supabase
-    .from('topics')
-    .update(updatePayload)
-    .eq('id', topicId)
+    .from('topic_progress')
+    .upsert(
+      { topic_id: topicId, user_id: user.id, ...updatePayload },
+      { onConflict: 'user_id,topic_id' }
+    )
 
   if (error) {
     console.error('Failed to update topic checklist:', error)
@@ -194,6 +198,7 @@ export async function getDashboardData() {
  */
 export async function getSubjectDetails(subjectId: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // We do a nested select to get Subject -> Units -> Topics
   const { data: subject, error } = await supabase
@@ -212,8 +217,30 @@ export async function getSubjectDetails(subjectId: string) {
     console.error('Failed to fetch subject details:', error)
     return { success: false, data: null }
   }
-  
-  // Sort units and topics by order_index and created_at
+
+  // Fetch user's topic progress for this subject
+  let progressMap: Record<string, any> = {}
+  if (user) {
+    // Collect all topic IDs
+    const topicIds: string[] = []
+    subject.units?.forEach((u: any) => {
+      u.topics?.forEach((t: any) => topicIds.push(t.id))
+    })
+
+    if (topicIds.length > 0) {
+      const { data: progressData } = await supabase
+        .from('topic_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .in('topic_id', topicIds)
+
+      progressData?.forEach((p) => {
+        progressMap[p.topic_id] = p
+      })
+    }
+  }
+
+  // Sort units and topics by order_index and created_at, and merge progress
   if (subject.units) {
     subject.units.sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0))
     
@@ -222,6 +249,37 @@ export async function getSubjectDetails(subjectId: string) {
 
     subject.units.forEach((unit: any) => {
       if (unit.topics) {
+        // Merge progress data into topics
+        unit.topics = unit.topics.map((t: any) => {
+          const progress = progressMap[t.id]
+          if (progress) {
+            return {
+              ...t,
+              status: progress.status,
+              confidence_score: progress.confidence_score,
+              time_spent_mins: progress.time_spent_mins,
+              last_studied: progress.last_studied,
+              next_revision: progress.next_revision,
+              revision_count: progress.revision_count,
+              is_bookmarked: progress.is_bookmarked,
+              notes_completed: progress.notes_completed,
+              revision_completed: progress.revision_completed,
+            }
+          } else {
+            // Default progress if no record exists
+            return {
+              ...t,
+              status: 'pending',
+              confidence_score: 0,
+              time_spent_mins: 0,
+              revision_count: 0,
+              is_bookmarked: false,
+              notes_completed: false,
+              revision_completed: false,
+            }
+          }
+        })
+
         const staticUnit = staticSubject?.units.find((u) => u.name === unit.name)
         
         unit.topics.sort((a: any, b: any) => {
@@ -312,10 +370,17 @@ export async function deleteTodo(id: string) {
 export async function updateTopicConfidence(topicId: string, score: number) {
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Not authenticated' }
+
   const { error } = await supabase
-    .from('topics')
-    .update({ confidence_score: score })
-    .eq('id', topicId)
+    .from('topic_progress')
+    .upsert(
+      { topic_id: topicId, user_id: user.id, confidence_score: score },
+      { onConflict: 'user_id,topic_id' }
+    )
 
   if (error) {
     console.error('Failed to update confidence score:', error)
@@ -340,10 +405,8 @@ export async function getWeakTopics() {
   if (!user) return { success: false, data: [] }
 
   const { data: weakTopics, error } = await supabase
-    .from('topics')
-    .select('*, subject:subjects(name, color), unit:units(name)')
-    .gt('confidence_score', 0)
-    .lte('confidence_score', 4)
+    .from('weak_topics')
+    .select('*')
     .order('confidence_score', { ascending: true })
     .limit(5)
 
@@ -352,7 +415,14 @@ export async function getWeakTopics() {
     return { success: false, data: [] }
   }
 
-  return { success: true, data: weakTopics || [] }
+  // Map view results to match the structure expected by components (e.g., subject object)
+  const mappedTopics = (weakTopics || []).map(t => ({
+    ...t,
+    subject: { name: t.subject_name, color: t.subject_color },
+    unit: { name: t.unit_name }
+  }))
+
+  return { success: true, data: mappedTopics }
 }
 
 /**
@@ -414,12 +484,16 @@ export async function getNotifications() {
     .select('id, name, subject_id, subject_name, subject_color, next_revision')
     .limit(5)
 
-  const { data: weak } = await supabase
-    .from('topics')
-    .select('id, name, subject_id, subject:subjects(name, color)')
-    .gt('confidence_score', 0)
-    .lte('confidence_score', 4)
+  const { data: weakRaw } = await supabase
+    .from('weak_topics')
+    .select('id, name, subject_id, subject_name, subject_color')
     .limit(5)
+
+  // Map to the format the UI expects for weak topics
+  const weak = (weakRaw || []).map(w => ({
+    ...w,
+    subject: { name: w.subject_name, color: w.subject_color }
+  }))
 
   return { 
     success: true, 
