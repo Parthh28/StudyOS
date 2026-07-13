@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Internal documentation & notes
+ARCHITECTURE.md
+Font.md
+WORKFLOW.md
+color.md
+AGENTS.md
+CLAUDE.md
+
+# Supabase integration & migrations
+supabase/
+/supabase/
+*.sql
+
+# Scratch & utility scripts
+upgrade-to-pro.mjs
+
