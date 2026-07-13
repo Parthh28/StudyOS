@@ -1,18 +1,21 @@
 'use client'
 
-import { ThemeProvider } from 'next-themes'
+import * as React from 'react'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
-      disableTransitionOnChange
-    >
+    <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       {children}
-      <Toaster richColors position="top-right" />
-    </ThemeProvider>
+      {mounted && <Toaster richColors position="top-right" />}
+    </NextThemesProvider>
   )
 }
+

@@ -1,21 +1,15 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import {
-  LayoutDashboard,
-  BookOpen,
-  LineChart,
-  Settings,
-  Play,
-  Search,
-  Bell,
   Calendar,
+  // Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
 import { SidebarNav } from '@/components/sidebar-nav'
-import { PomodoroTimer } from '@/components/pomodoro-timer'
 import { GlobalSearch } from '@/components/global-search'
 import { NotificationBell } from '@/components/notification-bell'
 import { MobileNav } from '@/components/mobile-nav'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default async function DashboardLayout({
   children,
@@ -24,7 +18,6 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient()
 
-  // Ensure user is authenticated
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -32,105 +25,115 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Fetch basic profile info for the sidebar/header
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name')
     .eq('id', user.id)
     .single()
 
-  // If user has no profile, force them to complete onboarding
   if (!profile) {
     redirect('/onboarding')
   }
 
   const firstName = profile.full_name?.split(' ')[0] || 'Student'
-  
-  // Format current date "October 24, 2023"
+
   const currentDate = new Intl.DateTimeFormat('en-US', {
-    month: 'long',
+    month: 'short',
     day: 'numeric',
     year: 'numeric',
   }).format(new Date())
 
-  // Fetch subjects for Pomodoro
-  const { data: subjects } = await supabase
-    .from('subjects')
-    .select('id, name, code, created_at')
-    .order('created_at', { ascending: true })
-
-
-
-  // Refetch cleaned subjects for Pomodoro
   const { data: cleanedSubjects } = await supabase
     .from('subjects')
     .select('id, name')
     .order('order_index')
 
   return (
-    <div className="bg-background text-foreground min-h-screen flex overflow-x-hidden selection:bg-indigo/30 selection:text-indigo">
-      {/* SideNavBar (Desktop) */}
-      <nav className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-[#131b2e] dark:bg-[#131b2e] border-r border-white/5 shadow-2xl py-8 gap-8 z-[60]">
-        
+    <div className="bg-background text-foreground min-h-screen flex overflow-x-hidden selection:bg-primary/20 selection:text-primary">
+      {/* Precision SaaS Sidebar (Desktop) */}
+      <nav className="hidden md:flex flex-col h-screen w-60 fixed left-0 top-0 bg-card/60 backdrop-blur-md border-r border-border/70 p-4 gap-6 z-[60]">
         {/* StudyOS Logo */}
-        <div className="px-6 flex justify-center w-full">
-          <img src="/logo.png" alt="StudyOS Logo" className="h-14 w-auto object-contain" />
+        <div className="px-2 pt-1 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="StudyOS Logo" className="h-8 w-auto object-contain" />
+          </Link>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface border border-border/70 text-text-muted">
+            v2.5
+          </span>
         </div>
 
-        {/* User Profile */}
-        <div className="px-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
-            <span className="text-lg">{firstName.charAt(0)}</span>
+        {/* User Workspace Identity Card */}
+        <div className="px-2.5 py-2 rounded-xl bg-surface/60 border border-border/60 flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center font-bold text-white text-xs shrink-0">
+            {firstName.charAt(0)}
           </div>
-          <div className="overflow-hidden">
-            <h2 className="text-sm font-semibold text-white truncate">{profile?.full_name || 'Student'}</h2>
-            <p className="text-xs font-semibold tracking-wider text-indigo uppercase truncate">Deep Focus</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xs font-semibold text-foreground truncate">
+              {profile?.full_name || 'Student'}
+            </h2>
+            <p className="text-[10px] font-mono text-text-muted truncate">
+              Deep Focus Workspace
+            </p>
           </div>
         </div>
 
-        <SidebarNav />
-
-        <div className="px-6 mt-auto">
-          <PomodoroTimer subjects={cleanedSubjects || []} />
+        <div className="flex-1 overflow-y-auto pr-1">
+          <SidebarNav />
         </div>
       </nav>
 
-      {/* Main Content Area */}
-      <main className="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen">
-        {/* TopNavBar */}
-        <header className="sticky top-0 w-full bg-[#0b1326]/80 backdrop-blur-md border-b border-white/10 shadow-sm z-50 flex justify-between items-center px-4 md:px-6 py-3 md:py-4">
-          <div className="flex items-center gap-2 md:gap-4">
-            <MobileNav 
-              profileName={profile?.full_name || 'Student'} 
-              firstName={firstName} 
-              subjects={cleanedSubjects || []} 
+      {/* Main Content Shell */}
+      <main className="flex-1 ml-0 md:ml-60 flex flex-col min-h-screen">
+        {/* Precision SaaS Header */}
+        <header className="sticky top-0 w-full h-14 bg-background/85 backdrop-blur-md border-b border-border/70 z-50 flex justify-between items-center px-4 md:px-6">
+          <div className="flex items-center gap-3">
+            <MobileNav
+              profileName={profile?.full_name || 'Student'}
+              firstName={firstName}
+              subjects={cleanedSubjects || []}
             />
-            {/* Mobile Logo */}
-            <img src="/logo.png" alt="StudyOS Logo" className="md:hidden h-8 w-auto object-contain" />
-            <div className="hidden md:block">
-              <h1 className="text-2xl font-bold text-white">Welcome back, {firstName}</h1>
-              <p className="text-sm text-text-muted">{currentDate}</p>
+            <img src="/logo.png" alt="StudyOS Logo" className="md:hidden h-7 w-auto object-contain" />
+            <div className="hidden md:flex items-center gap-2">
+              <span className="text-xs font-mono font-medium text-text-muted bg-surface/80 px-2.5 py-1 rounded-md border border-border/60">
+                {currentDate}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2 md:gap-4 text-text-muted shrink-0">
+          <div className="flex items-center gap-2.5 text-text-muted shrink-0">
             <GlobalSearch />
-            <NotificationBell />
-            <Link href="/calendar" className="hidden sm:block">
-              <button className="hover:text-indigo transition-colors p-2 rounded-full hover:bg-surface-2/50" title="Calendar">
-                <Calendar className="w-5 h-5" />
+            {/* Temporarily hidden until AI feature launch:
+            <Link href="/ai-chat" className="hidden sm:block">
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg gradient-primary text-white text-xs font-semibold transition-all hover:opacity-90 shadow-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Ask AI</span>
               </button>
             </Link>
-            
-            {/* Mobile Profile Avatar */}
-            <div className="md:hidden w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden border border-white/10 ml-1 gradient-primary flex items-center justify-center text-white font-bold text-xs sm:text-sm shrink-0">
+            */}
+            <NotificationBell />
+            <ThemeToggle />
+            <Link href="/calendar" className="hidden sm:block">
+              <button
+                type="button"
+                className="hover:text-foreground transition-colors p-2 rounded-lg hover:bg-surface-2"
+                title="Calendar"
+              >
+                <Calendar className="w-4 h-4" />
+              </button>
+            </Link>
+
+            {/* Mobile Avatar */}
+            <div className="md:hidden w-7 h-7 rounded-full overflow-hidden border border-border ml-1 gradient-primary flex items-center justify-center font-bold text-xs text-white shrink-0">
               {firstName.charAt(0)}
             </div>
           </div>
         </header>
 
-        {/* Dynamic Page Content */}
-        {children}
+        {/* Dynamic Content */}
+        <div className="flex-1">{children}</div>
       </main>
     </div>
   )

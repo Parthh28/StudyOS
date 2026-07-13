@@ -29,8 +29,8 @@ export default async function CalendarPage() {
     <div className="flex-1 p-5 md:p-10 max-w-[1000px] w-full mx-auto">
       
       <div className="mb-8 animate-fade-in-up">
-        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-          <CalendarIcon className="w-8 h-8 text-indigo" />
+        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+          <CalendarIcon className="w-8 h-8 text-primary" />
           Academic Calendar
         </h1>
         <p className="text-text-muted mt-2">Track your upcoming exams and deadlines.</p>
@@ -41,8 +41,8 @@ export default async function CalendarPage() {
         {/* Upcoming Timeline */}
         <div className="md:col-span-8 space-y-8 animate-fade-in-up delay-100">
           <section>
-            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-indigo" />
+            <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
               Upcoming Deadlines
             </h2>
 
@@ -56,25 +56,25 @@ export default async function CalendarPage() {
                     <div key={exam.id} className="relative">
                       {/* Timeline Dot */}
                       <div 
-                        className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-4 border-background ${i === 0 ? 'bg-indigo shadow-[0_0_10px_rgba(99,102,241,0.8)]' : 'bg-surface-2'}`}
+                        className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-4 border-background ${i === 0 ? 'bg-primary shadow-[0_0_10px_rgba(37,99,235,0.8)]' : 'bg-surface-2'}`}
                       />
                       
-                      <div className="glass rounded-xl p-5 hover:bg-surface-2/40 transition-colors border border-white/5">
+                      <div className="bg-card border border-border rounded-xl p-5 hover:bg-surface-2/40 transition-colors border border-border">
                         <div className="flex justify-between items-start mb-3">
                           <div>
                             <div className="flex items-center gap-2 mb-2">
                               <span 
                                 className="w-2.5 h-2.5 rounded-full" 
-                                style={{ backgroundColor: exam.subject?.color || '#6366F1' }} 
+                                style={{ backgroundColor: exam.subject?.color || '#2563EB' }} 
                               />
                               <span className="text-xs font-bold tracking-widest text-text-muted uppercase">
                                 {exam.subject?.name || 'General'}
                               </span>
                             </div>
-                            <h3 className="text-lg font-bold text-white">{exam.name}</h3>
+                            <h3 className="text-lg font-bold text-foreground">{exam.name}</h3>
                           </div>
                           <div className="text-right">
-                            <div className="bg-indigo/10 text-indigo px-3 py-1 rounded-lg border border-indigo/20">
+                            <div className="bg-primary/10 text-primary px-3 py-1 rounded-lg border border-primary/20">
                               <span className="text-lg font-bold">{format(examDate, 'MMM d')}</span>
                             </div>
                           </div>
@@ -95,7 +95,7 @@ export default async function CalendarPage() {
                 })}
               </div>
             ) : (
-              <div className="glass rounded-xl p-8 text-center text-text-muted border border-white/5 border-dashed">
+              <div className="bg-card border border-border rounded-xl p-8 text-center text-text-muted border border-border border-dashed">
                 <Target className="w-10 h-10 mx-auto mb-3 opacity-20" />
                 <p>No upcoming exams scheduled.</p>
               </div>
@@ -105,16 +105,16 @@ export default async function CalendarPage() {
           {/* Past Exams */}
           {pastExams.length > 0 && (
             <section className="opacity-70 mt-12">
-              <h2 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-text-muted" />
                 Past Exams
               </h2>
               
               <div className="space-y-4">
                 {pastExams.map(exam => (
-                  <div key={exam.id} className="flex justify-between items-center p-4 rounded-xl bg-surface-2/20 border border-white/5">
+                  <div key={exam.id} className="flex justify-between items-center p-4 rounded-xl bg-surface-2/20 border border-border">
                     <div>
-                      <h4 className="text-sm font-semibold text-white">{exam.name}</h4>
+                      <h4 className="text-sm font-semibold text-foreground">{exam.name}</h4>
                       <p className="text-xs text-text-muted mt-0.5">{exam.subject?.name}</p>
                     </div>
                     <span className="text-xs font-medium text-text-muted">
@@ -129,14 +129,14 @@ export default async function CalendarPage() {
 
         {/* Right Sidebar */}
         <div className="md:col-span-4 animate-fade-in-up delay-200">
-          <div className="glass rounded-2xl p-6 border-indigo/10">
-            <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Focus Mode</h3>
+          <div className="bg-card border border-border rounded-2xl p-6 border-primary/10">
+            <h3 className="text-sm font-bold text-foreground mb-4 uppercase tracking-wider">Focus Mode</h3>
             <p className="text-sm text-text-muted mb-6">
               You have {upcomingExams.length} upcoming deadlines. Stay on top of your pacing engine!
             </p>
-            <div className="w-full aspect-square rounded-xl bg-surface-2/30 flex items-center justify-center border border-white/5 relative overflow-hidden">
+            <div className="w-full aspect-square rounded-xl bg-surface-2/30 flex items-center justify-center border border-border relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-              <CalendarIcon className="w-16 h-16 text-indigo opacity-20" />
+              <CalendarIcon className="w-16 h-16 text-primary opacity-20" />
             </div>
           </div>
         </div>

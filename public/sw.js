@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studyos-v1';
+const CACHE_NAME = 'studyos-v2';
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
@@ -36,6 +36,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Bypass service worker caching entirely in local development (localhost / LAN IP)
+  // This prevents Turbopack/Next.js dev chunks from getting stale in the SW cache.
+  const isLocalDev =
+    self.location.hostname === 'localhost' ||
+    self.location.hostname === '127.0.0.1' ||
+    self.location.hostname.startsWith('10.') ||
+    self.location.hostname.startsWith('100.') ||
+    self.location.hostname.startsWith('172.') ||
+    self.location.hostname.startsWith('192.168.') ||
+    self.location.hostname.endsWith('.local');
+
+  if (isLocalDev) {
+    return;
+  }
+
   // Only intercept static assets (images, icons, Next.js static chunks)
   if (
     url.pathname.startsWith('/_next/static/') ||
@@ -60,3 +75,4 @@ self.addEventListener('fetch', (event) => {
   // This prevents the "redirected response was used for a request whose redirect mode is not 'follow'" error.
   return;
 });
+

@@ -21,8 +21,8 @@ export function StudyTrendsChart({ data }: { data: ChartDataPoint[] }) {
       <AreaChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
         <defs>
           <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#6366F1" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#6366F1" stopOpacity={0}/>
+            <stop offset="5%" stopColor="#2563EB" stopOpacity={0.4}/>
+            <stop offset="95%" stopColor="#2563EB" stopOpacity={0}/>
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
@@ -49,18 +49,18 @@ export function StudyTrendsChart({ data }: { data: ChartDataPoint[] }) {
             backdropFilter: 'blur(8px)',
             boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)'
           }}
-          itemStyle={{ color: '#818cf8', fontWeight: 'bold' }}
+          itemStyle={{ color: '#60a5fa', fontWeight: 'bold' }}
           formatter={(value: any) => [`${value} hours`, 'Study Time']}
           labelStyle={{ color: '#cbd5e1', marginBottom: '4px' }}
         />
         <Area 
           type="monotone" 
           dataKey="hours" 
-          stroke="#818cf8" 
+          stroke="#2563EB" 
           strokeWidth={3}
           fillOpacity={1} 
           fill="url(#colorHours)" 
-          activeDot={{ r: 6, fill: '#06B6D4', stroke: '#fff', strokeWidth: 2, className: 'shadow-[0_0_15px_#06B6D4]' }}
+          activeDot={{ r: 6, fill: '#0284C7', stroke: '#fff', strokeWidth: 2, className: 'shadow-[0_0_15px_#0284C7]' }}
         />
       </AreaChart>
     </ResponsiveContainer>

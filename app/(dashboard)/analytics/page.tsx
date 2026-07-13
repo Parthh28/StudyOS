@@ -133,7 +133,7 @@ export default async function AnalyticsPage() {
         <div className="col-span-1 lg:col-span-12 grid grid-cols-1 md:grid-cols-1 gap-6">
           
           {/* Card 1: Syllabus Completion */}
-          <div className="glass rounded-xl p-6 relative overflow-hidden flex flex-col justify-between h-40 group hover:border-white/30 transition-all hover:shadow-[0_0_20px_rgba(99,102,241,0.15)]">
+          <div className="glass rounded-xl p-6 relative overflow-hidden flex flex-col justify-between h-40 group hover:border-white/30 transition-all hover:shadow-[0_0_20px_rgba(37,99,235,0.15)]">
             <div className="flex justify-between items-start">
               <span className="text-xs font-semibold tracking-widest text-text-muted uppercase">Syllabus Completion</span>
               <CheckCircle2 className="text-indigo w-5 h-5" />
@@ -176,7 +176,7 @@ export default async function AnalyticsPage() {
           {/* Doughnut Chart */}
           <div className="relative w-48 h-48 mx-auto my-6">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#1E293B" strokeWidth="6"></circle>
+              <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#130924" strokeWidth="6"></circle>
               {doughnutSegments.map((segment: any, index: number) => (
                 <circle 
                   key={segment.subject_id}
@@ -244,11 +244,11 @@ export default async function AnalyticsPage() {
                     if (mins >= 60) intensity = 3
                     if (mins >= 120) intensity = 4
 
-                    let bgColor = '#1E293B' // surface
-                    if (intensity === 1) bgColor = 'rgba(99,102,241, 0.2)'
-                    if (intensity === 2) bgColor = 'rgba(99,102,241, 0.4)'
-                    if (intensity === 3) bgColor = 'rgba(99,102,241, 0.6)'
-                    if (intensity === 4) bgColor = '#6366F1'
+                    let bgColor = 'var(--surface-2)' // surface
+                    if (intensity === 1) bgColor = 'rgba(37,99,235, 0.2)'
+                    if (intensity === 2) bgColor = 'rgba(37,99,235, 0.4)'
+                    if (intensity === 3) bgColor = 'rgba(37,99,235, 0.6)'
+                    if (intensity === 4) bgColor = '#2563EB'
 
                     // Create a date label for the tooltip
                     const d = new Date()
@@ -262,11 +262,11 @@ export default async function AnalyticsPage() {
                         className="w-4 h-4 rounded-sm transition-all duration-200 hover:scale-110 focus:scale-110 hover:z-10 focus:z-10 cursor-pointer relative group focus:outline-none"
                         style={{ 
                           backgroundColor: bgColor,
-                          boxShadow: intensity === 4 ? '0 0 5px #6366F1' : 'none'
+                          boxShadow: intensity === 4 ? '0 0 5px #2563EB' : 'none'
                         }}
                       >
                         {/* Tooltip */}
-                        <div className="absolute -top-11 left-1/2 transform -translate-x-1/2 bg-[#0b1326] text-white text-[10px] py-1.5 px-2.5 rounded opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-white/10 shadow-xl font-semibold">
+                        <div className="absolute -top-11 left-1/2 transform -translate-x-1/2 bg-card text-foreground text-[10px] py-1.5 px-2.5 rounded opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-border shadow-xl font-semibold">
                           {mins > 0 ? `${Math.floor(mins/60)}h ${mins%60}m` : '0m'} • {dateLabel}
                         </div>
                       </div>
@@ -284,9 +284,8 @@ export default async function AnalyticsPage() {
               </div>
               <div className="bg-surface-2/30 border border-white/5 rounded-xl p-4 flex flex-col justify-center relative overflow-hidden">
                 <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-1">Current Streak</p>
-                <p className="text-xl font-bold text-white flex items-center gap-2">
+                <p className="text-xl font-bold text-foreground flex items-center gap-2">
                   {currentStreak} {currentStreak === 1 ? 'Day' : 'Days'}
-                  {currentStreak > 0 && <span className="text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]">🔥</span>}
                 </p>
                 {currentStreak > 2 && (
                   <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-orange-500/20 blur-xl rounded-full"></div>

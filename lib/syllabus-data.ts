@@ -22,7 +22,7 @@ export const SYLLABUS_DATA: SubjectData[] = [
     id: 'eng-math-3',
     name: 'Engineering Mathematics III',
     code: 'MAT201R01',
-    color: '#6366F1', // Indigo
+    color: '#2563EB', // Sapphire Blue
     icon: 'Calculator',
     type: 'theory',
     units: [
@@ -87,7 +87,7 @@ export const SYLLABUS_DATA: SubjectData[] = [
     id: 'electric-networks',
     name: 'Electric Networks',
     code: 'EEE201R01',
-    color: '#8B5CF6', // Violet
+    color: '#0D9488', // Deep Teal
     icon: 'Zap',
     type: 'theory',
     units: [
@@ -146,7 +146,7 @@ export const SYLLABUS_DATA: SubjectData[] = [
     id: 'analog-electronic',
     name: 'Analog Electronic Circuits',
     code: 'EIE218R02',
-    color: '#06B6D4', // Cyan
+    color: '#0284C7', // Cerulean
     icon: 'Cpu',
     type: 'theory',
     units: [
@@ -202,7 +202,7 @@ export const SYLLABUS_DATA: SubjectData[] = [
     id: 'digital-electronics',
     name: 'Digital Electronics',
     code: 'ECE105R01',
-    color: '#10B981', // Emerald
+    color: '#059669', // Rich Emerald
     icon: 'Binary',
     type: 'theory',
     units: [
@@ -256,7 +256,7 @@ export const SYLLABUS_DATA: SubjectData[] = [
     id: 'ee-measurements',
     name: 'Electrical & Electronic Measurements',
     code: 'EIE102',
-    color: '#F59E0B', // Amber
+    color: '#D97706', // Warm Gold
     icon: 'Gauge',
     type: 'theory',
     units: [
@@ -314,7 +314,7 @@ export const SYLLABUS_DATA: SubjectData[] = [
     id: 'measurements-lab',
     name: 'Electrical & Electronics Measurements Lab',
     code: 'EIE103',
-    color: '#EF4444', // Red
+    color: '#E11D48', // Crimson
     icon: 'FlaskConical',
     type: 'lab',
     units: [
@@ -341,7 +341,7 @@ export const SYLLABUS_DATA: SubjectData[] = [
     id: 'analog-circuits-lab',
     name: 'Analog Circuits Laboratory',
     code: 'EIE229',
-    color: '#EC4899', // Pink
+    color: '#475569', // Slate Steel
     icon: 'Microscope',
     type: 'lab',
     units: [

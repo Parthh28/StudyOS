@@ -46,35 +46,35 @@ export function GlobalSearch() {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="hover:text-indigo transition-colors p-2 rounded-full hover:bg-surface-2/50"
+        className="hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-2/50"
         title="Search (Cmd+K)"
       >
         <Search className="w-5 h-5" />
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-[#060e20]/80 backdrop-blur-md p-4">
-          <div className="bg-[#0b1326] border border-indigo/20 rounded-2xl shadow-[0_0_40px_rgba(99,102,241,0.15)] w-full max-w-2xl relative overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-background/80 backdrop-blur-md p-4">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl relative overflow-hidden flex flex-col">
             
             {/* Search Input */}
-            <div className="flex items-center px-4 border-b border-white/10">
-              <Search className="w-5 h-5 text-indigo" />
+            <div className="flex items-center px-4 border-b border-border">
+              <Search className="w-5 h-5 text-primary" />
               <input
                 autoFocus
                 type="text"
                 placeholder="Search topics, formulas, notes..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full bg-transparent border-none text-lg text-white px-4 py-5 focus:outline-none placeholder:text-text-muted/50"
+                className="w-full bg-transparent border-none text-lg text-foreground px-4 py-5 focus:outline-none placeholder:text-text-muted/50"
               />
               {isPending ? (
-                <Loader2 className="w-5 h-5 text-indigo animate-spin" />
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
               ) : (
                 <div className="flex items-center gap-2">
-                  <kbd className="hidden sm:inline-flex items-center justify-center px-2 py-1 text-[10px] font-medium text-text-muted bg-surface-2 rounded border border-white/5 uppercase">
+                  <kbd className="hidden sm:inline-flex items-center justify-center px-2 py-1 text-[10px] font-medium text-text-muted bg-surface-2 rounded border border-border uppercase">
                     ESC
                   </kbd>
-                  <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-white p-1">
+                  <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-foreground p-1">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -96,14 +96,14 @@ export function GlobalSearch() {
                       key={topic.id}
                       onClick={() => setIsOpen(false)}
                     >
-                      <div className="flex items-center justify-between p-3 rounded-xl hover:bg-indigo/10 transition-colors cursor-pointer group">
+                      <div className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-2 transition-colors cursor-pointer group">
                         <div className="flex items-center gap-3">
                           <div 
                             className="w-2 h-2 rounded-full flex-shrink-0" 
-                            style={{ backgroundColor: topic.subject?.color || '#6366F1' }}
+                            style={{ backgroundColor: topic.subject?.color || '#2563EB' }}
                           />
                           <div>
-                            <p className="text-sm font-semibold text-white group-hover:text-indigo transition-colors">
+                            <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                               {topic.name}
                             </p>
                             <p className="text-xs text-text-muted mt-0.5">
@@ -111,7 +111,7 @@ export function GlobalSearch() {
                             </p>
                           </div>
                         </div>
-                        <span className="text-xs text-indigo opacity-0 group-hover:opacity-100 transition-opacity">Jump →</span>
+                        <span className="text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">Jump →</span>
                       </div>
                     </Link>
                   ))}

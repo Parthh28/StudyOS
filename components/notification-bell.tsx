@@ -34,7 +34,7 @@ export function NotificationBell() {
       >
         <Bell className="w-5 h-5" />
         {hasNotifications && (
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-danger rounded-full border-2 border-[#0b1326] animate-pulse"></span>
+          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-danger rounded-full border-2 border-[#090314] animate-pulse"></span>
         )}
       </button>
 
@@ -46,9 +46,9 @@ export function NotificationBell() {
             onClick={() => setIsOpen(false)}
           />
           
-          <div className="absolute right-0 top-12 w-80 bg-[#131b2e] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in-up">
-            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#0b1326]">
-              <h3 className="font-semibold text-white">Notifications</h3>
+          <div className="absolute right-0 top-12 w-80 bg-card border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in-up">
+            <div className="p-4 border-b border-border flex justify-between items-center bg-surface">
+              <h3 className="font-semibold text-foreground">Notifications</h3>
               {hasNotifications && (
                 <span className="text-[10px] font-bold bg-danger/20 text-danger px-2 py-0.5 rounded-full">
                   {totalCount} New
@@ -74,12 +74,12 @@ export function NotificationBell() {
                       <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2 px-2">Overdue Revision</h4>
                       {overdue.map(topic => (
                         <Link href={`/subjects/${topic.subject_id}`} key={`overdue-${topic.id}`} onClick={() => setIsOpen(false)}>
-                          <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                          <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-2 transition-colors cursor-pointer">
                             <div className="mt-0.5 w-7 h-7 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                               <AlertCircle className="w-3.5 h-3.5 text-orange-500" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-white line-clamp-2 leading-tight">{topic.name}</p>
+                              <p className="text-sm font-medium text-foreground line-clamp-2 leading-tight">{topic.name}</p>
                               <p className="text-xs text-text-muted mt-1">{topic.subject_name}</p>
                             </div>
                           </div>
@@ -90,16 +90,16 @@ export function NotificationBell() {
 
                   {/* Weak Topics */}
                   {weak.length > 0 && (
-                    <div className="p-3 border-t border-white/5">
+                    <div className="p-3 border-t border-border">
                       <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2 px-2">Weak Topics</h4>
                       {weak.map(topic => (
                         <Link href={`/subjects/${topic.subject_id}`} key={`weak-${topic.id}`} onClick={() => setIsOpen(false)}>
-                          <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer">
+                          <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-surface-2 transition-colors cursor-pointer">
                             <div className="mt-0.5 w-7 h-7 rounded-full bg-danger/20 flex items-center justify-center flex-shrink-0">
                               <Flame className="w-3.5 h-3.5 text-danger" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-white line-clamp-2 leading-tight">{topic.name}</p>
+                              <p className="text-sm font-medium text-foreground line-clamp-2 leading-tight">{topic.name}</p>
                               <p className="text-xs text-text-muted mt-1">{topic.subject?.name}</p>
                             </div>
                           </div>

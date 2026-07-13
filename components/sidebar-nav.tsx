@@ -1,105 +1,76 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   BookOpen,
   LineChart,
   Settings,
-  LogOut,
-  AlertTriangle
+  // Sparkles,
+  // MessageSquare,
+  Target,
+  Clock,
 } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
-} from "@/components/ui/dialog"
+
+type NavItem = {
+  name: string
+  href: string
+  icon: React.ElementType
+  matches?: string[]
+  badge?: string
+}
 
 export function SidebarNav() {
   const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createClient()
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
-  }
-
-  const links = [
+  const links: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Subjects', href: '/subjects', icon: BookOpen, matches: ['/subjects'] },
+    { name: 'Mastery Hub', href: '/mastery', icon: Target, matches: ['/mastery'] },
+    { name: 'Pomodoro', href: '/pomodoro', icon: Clock, matches: ['/pomodoro'] },
     { name: 'Analytics', href: '/analytics', icon: LineChart },
+    // Temporarily hidden until AI feature release:
+    // { name: 'AI Coach', href: '/ai-coach', icon: Sparkles, badge: 'PRO' },
+    // { name: 'AI Chat', href: '/ai-chat', icon: MessageSquare, badge: 'PRO' },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
   return (
-    <div className="flex-1 px-4 space-y-2">
+    <div className="space-y-0.5">
       {links.map((link) => {
         const Icon = link.icon
-        // Check if current pathname starts with the link href (useful for nested routes like /subjects/[id])
-        const isActive = link.matches 
-          ? link.matches.some(m => pathname.startsWith(m))
-          : pathname === link.href
+        const isActive =
+          pathname === link.href ||
+          link.matches?.some((m) => pathname.startsWith(m))
 
         return (
           <Link
             key={link.name}
             href={link.href}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+            className={`group flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
               isActive
-                ? 'text-indigo bg-indigo/10 shadow-[inset_0_0_10px_rgba(99,102,241,0.05)] border border-indigo/20'
-                : 'text-text-muted hover:bg-surface-2/50 hover:text-white'
+                ? 'bg-surface-2 text-foreground font-semibold border border-border/80 shadow-xs'
+                : 'text-text-muted hover:bg-surface/80 hover:text-foreground border border-transparent'
             }`}
           >
-            <Icon className="w-5 h-5" />
-            <span className="text-sm font-semibold tracking-wide">{link.name}</span>
+            <div className="flex items-center gap-2.5">
+              <Icon
+                className={`w-4 h-4 transition-colors ${
+                  isActive ? 'text-primary' : 'text-text-muted group-hover:text-foreground'
+                }`}
+              />
+              <span className="tracking-tight">{link.name}</span>
+            </div>
+
+            {link.badge && (
+              <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold tracking-wider uppercase rounded bg-primary/10 text-primary border border-primary/20">
+                {link.badge}
+              </span>
+            )}
           </Link>
         )
       })}
-      
-      <Dialog>
-        <DialogTrigger render={
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-text-muted hover:bg-surface-2/50 hover:text-danger mt-4">
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm font-semibold tracking-wide">Log Out</span>
-          </button>
-        } />
-        
-        <DialogContent className="bg-[#0b1326] border-white/10 sm:max-w-sm rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2 text-xl">
-              <LogOut className="w-5 h-5 text-danger" />
-              Sign Out
-            </DialogTitle>
-            <DialogDescription className="text-text-muted mt-2">
-              Are you sure you want to log out of StudyOS? You will need to log back in to access your dashboard.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="border-t border-white/5 bg-transparent mt-6 pt-4 sm:justify-end gap-3 flex-row flex">
-            <DialogClose render={
-              <button className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-surface-2 hover:bg-surface-2/80 transition-all flex-1 sm:flex-none">
-                Cancel
-              </button>
-            } />
-            <DialogClose render={
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-danger/90 hover:bg-danger transition-all shadow-[0_0_15px_rgba(239,68,68,0.3)] flex-1 sm:flex-none"
-              >
-                Yes, Sign Out
-              </button>
-            } />
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

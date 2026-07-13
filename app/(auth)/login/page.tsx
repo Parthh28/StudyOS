@@ -148,6 +148,23 @@ export default function LoginPage() {
         type: 'signup',
       })
       if (error) throw error
+
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', userData.user.id)
+          .single()
+
+        if (profile?.full_name) {
+          toast.success('Welcome back to StudyOS!')
+          router.push('/dashboard')
+          router.refresh()
+          return
+        }
+      }
+
       toast.success('Email verified! Setting up your account…')
       router.push('/onboarding')
       router.refresh()
@@ -205,7 +222,7 @@ export default function LoginPage() {
         <p className="text-text-muted text-sm">Your academic productivity system</p>
       </div>
 
-      <div className="glass rounded-2xl p-8 shadow-2xl">
+      <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl">
 
         {/* ── OTP STEP ─────────────────────────────────────────── */}
         {step === 'otp' ? (
@@ -213,8 +230,8 @@ export default function LoginPage() {
             {/* Header */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
-                style={{ background: 'rgba(99,102,241,0.15)' }}>
-                <ShieldCheck className="w-7 h-7 text-indigo" />
+                style={{ background: 'rgba(37,99,235,0.15)' }}>
+                <ShieldCheck className="w-7 h-7 text-primary" />
               </div>
               <h2 className="text-lg font-semibold text-foreground">Check your email</h2>
               <p className="text-sm text-text-muted mt-1">
@@ -245,7 +262,7 @@ export default function LoginPage() {
                       style={{
                         height: '52px',
                         borderColor: digit
-                          ? '#6366F1'
+                          ? '#2563EB'
                           : error
                           ? '#EF4444'
                           : '#334155',
@@ -295,7 +312,7 @@ export default function LoginPage() {
                   onClick={handleResend}
                   disabled={resendCooldown > 0 || loading}
                   className="flex items-center gap-1.5 transition-colors disabled:opacity-50"
-                  style={{ color: resendCooldown > 0 ? '#94A3B8' : '#6366F1' }}
+                  style={{ color: resendCooldown > 0 ? '#94A3B8' : '#2563EB' }}
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend code'}
@@ -366,8 +383,8 @@ export default function LoginPage() {
             {/* Sign up note */}
             {mode === 'signup' && (
               <div className="flex items-start gap-2 text-xs text-text-muted rounded-lg p-3"
-                style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)' }}>
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo flex-shrink-0 mt-0.5" />
+                style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.15)' }}>
+                <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
                 A 6-digit verification code will be sent to your email to confirm your account.
               </div>
             )}
@@ -413,8 +430,8 @@ export default function LoginPage() {
             {features.map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-3 text-sm text-text-muted">
                 <div className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(99,102,241,0.15)' }}>
-                  <Icon className="w-3.5 h-3.5 text-indigo" />
+                  style={{ background: 'rgba(37,99,235,0.15)' }}>
+                  <Icon className="w-3.5 h-3.5 text-primary" />
                 </div>
                 {label}
               </div>

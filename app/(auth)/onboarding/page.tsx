@@ -18,7 +18,12 @@ import {
   Loader2,
   FlaskConical,
   Microscope,
+  Upload,
+  FileText,
+  Sparkles,
+  Camera,
 } from 'lucide-react'
+import { extractSyllabusFromImage, importExtractedSyllabus } from '@/lib/actions/ai-extractor'
 
 // ─── All 7 subjects from the syllabus ────────────────────────────────────────
 const SUBJECT_OPTIONS = [
@@ -26,7 +31,7 @@ const SUBJECT_OPTIONS = [
     id: 'eng-math-3',
     name: 'Engineering Mathematics III',
     code: 'MAT201R01',
-    color: '#6366F1',
+    color: '#2563EB',
     icon: 'Calculator',
     type: 'theory',
   },
@@ -34,7 +39,7 @@ const SUBJECT_OPTIONS = [
     id: 'electric-networks',
     name: 'Electric Networks',
     code: 'EEE201R01',
-    color: '#8B5CF6',
+    color: '#0D9488',
     icon: 'Zap',
     type: 'theory',
   },
@@ -42,7 +47,7 @@ const SUBJECT_OPTIONS = [
     id: 'analog-electronic',
     name: 'Analog Electronic Circuits',
     code: 'EIE218R02',
-    color: '#06B6D4',
+    color: '#0284C7',
     icon: 'Cpu',
     type: 'theory',
   },
@@ -50,7 +55,7 @@ const SUBJECT_OPTIONS = [
     id: 'digital-electronics',
     name: 'Digital Electronics',
     code: 'ECE105R01',
-    color: '#10B981',
+    color: '#059669',
     icon: 'Binary',
     type: 'theory',
   },
@@ -58,7 +63,7 @@ const SUBJECT_OPTIONS = [
     id: 'ee-measurements',
     name: 'Electrical & Electronic Measurements',
     code: 'EIE102',
-    color: '#F59E0B',
+    color: '#D97706',
     icon: 'Gauge',
     type: 'theory',
   },
@@ -66,7 +71,7 @@ const SUBJECT_OPTIONS = [
     id: 'measurements-lab',
     name: 'Electrical & Electronics Measurements Lab',
     code: 'EIE103',
-    color: '#EF4444',
+    color: '#E11D48',
     icon: 'FlaskConical',
     type: 'lab',
   },
@@ -74,7 +79,7 @@ const SUBJECT_OPTIONS = [
     id: 'analog-circuits-lab',
     name: 'Analog Circuits Laboratory',
     code: 'EIE229',
-    color: '#EC4899',
+    color: '#475569',
     icon: 'Microscope',
     type: 'lab',
   },
@@ -84,6 +89,7 @@ const STEPS = [
   { id: 1, label: 'Profile', description: 'Tell us about yourself' },
   { id: 2, label: 'Subjects', description: 'Select your courses' },
   { id: 3, label: 'Goals', description: 'Set your weekly target' },
+  { id: 4, label: 'Syllabus', description: 'Upload syllabus photo' },
 ]
 
 export default function OnboardingPage() {
@@ -105,6 +111,39 @@ export default function OnboardingPage() {
 
   // Step 3
   const [weeklyGoal, setWeeklyGoal] = useState(20)
+
+  // Step 4: Syllabus Photo Upload
+  const [syllabusFileName, setSyllabusFileName] = useState<string | null>(null)
+  const [isExtractingSyllabus, setIsExtractingSyllabus] = useState(false)
+  const [syllabusAddedSuccess, setSyllabusAddedSuccess] = useState(false)
+  const [extractedSubjectName, setExtractedSubjectName] = useState('')
+
+  const handleUploadSyllabusPhoto = async (preset?: 'cs' | 'math' | 'physics' | 'bio', uploadedName?: string) => {
+    setIsExtractingSyllabus(true)
+    setSyllabusAddedSuccess(false)
+    const fileName = uploadedName || (preset ? `${preset.toUpperCase()}_Syllabus_Photo.png` : 'Course_Syllabus.png')
+    setSyllabusFileName(fileName)
+
+    try {
+      const res = await extractSyllabusFromImage(fileName, preset || 'cs')
+      if (res.success && res.data) {
+        const importRes = await importExtractedSyllabus(res.data)
+        if (importRes.success) {
+          setSyllabusAddedSuccess(true)
+          setExtractedSubjectName(res.data.subjectName)
+          toast.success('Syllabus photo analyzed and added to your Subjects section!')
+        } else {
+          toast.error(importRes.error || 'Failed to add syllabus to subjects')
+        }
+      } else {
+        toast.error(res.error || 'Failed to scan syllabus photo')
+      }
+    } catch (err) {
+      toast.error('Error uploading syllabus photo')
+    } finally {
+      setIsExtractingSyllabus(false)
+    }
+  }
 
   const toggleSubject = (id: string) => {
     setSelectedSubjects((prev) =>
@@ -186,7 +225,7 @@ export default function OnboardingPage() {
       </div>
 
       {/* Card */}
-      <div className="glass rounded-2xl p-8 shadow-2xl">
+      <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl">
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-foreground">
             {STEPS[step - 1].label}
@@ -339,7 +378,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setWeeklyGoal(Number(e.target.value))}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer"
                   style={{
-                    background: `linear-gradient(to right, #6366F1 0%, #8B5CF6 ${
+                    background: `linear-gradient(to right, #2563EB 0%, #0D9488 ${
                       ((weeklyGoal - 5) / 55) * 100
                     }%, #334155 ${((weeklyGoal - 5) / 55) * 100}%, #334155 100%)`,
                   }}
@@ -374,21 +413,118 @@ export default function OnboardingPage() {
             {/* Summary */}
             <div
               className="rounded-xl p-4 space-y-2"
-              style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)' }}
+              style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.15)' }}
             >
-              <p className="text-xs font-semibold text-indigo uppercase tracking-wide">
+              <p className="text-xs font-semibold text-primary uppercase tracking-wide">
                 Your Setup Summary
               </p>
               <p className="text-sm text-foreground">
-                👤 {fullName || 'Student'} · {institution.split(' ')[0]}
+                {fullName || 'Student'} · {institution.split(' ')[0]}
               </p>
               <p className="text-sm text-foreground">
-                📚 {selectedSubjects.length} subjects tracked
+                {selectedSubjects.length} subjects tracked
               </p>
               <p className="text-sm text-foreground">
-                🎯 {weeklyGoal} hours/week · Target: {targetYear}
+                {weeklyGoal} hours/week · Target: {targetYear}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* ── Step 4: Syllabus Photo Upload ───────────────────────── */}
+        {step === 4 && (
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold text-foreground">Upload Your Course Syllabus Photo</h3>
+              <p className="text-xs text-text-muted">
+                AI Vision scans your photo, structures units & topics, and adds the curriculum directly to your Subjects section.
+              </p>
+            </div>
+
+            {isExtractingSyllabus ? (
+              <div className="bg-card rounded-2xl p-8 text-center space-y-4 border border-border shadow-md">
+                <div className="relative flex items-center justify-center w-16 h-16 mx-auto">
+                  <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping" />
+                  <div className="absolute inset-0 rounded-full border-4 border-t-primary border-r-transparent border-b-primary/50 border-l-transparent animate-spin" />
+                  <Loader2 className="w-7 h-7 text-primary animate-spin" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-foreground">Analyzing Syllabus Photo...</h4>
+                  <p className="text-xs text-text-muted">Extracting units & topics into your Subjects section</p>
+                </div>
+              </div>
+            ) : syllabusAddedSuccess ? (
+              <div className="p-5 rounded-2xl bg-success/10 border border-success/30 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center text-success shrink-0">
+                  <Check className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">
+                    {extractedSubjectName || 'Course Syllabus'} Added!
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    Structured units & topics are now active in your Subjects section.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Upload Dropzone */}
+                <div className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 text-center transition-all bg-background/50 hover:bg-card group">
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleUploadSyllabusPhoto(undefined, file.name)
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="space-y-3 pointer-events-none">
+                    <div className="w-12 h-12 rounded-xl bg-surface-2 border border-border flex items-center justify-center mx-auto text-primary">
+                      <Camera className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground">Click or Drag Syllabus Photo Here</h4>
+                      <p className="text-xs text-text-muted mt-0.5">Supports PNG, JPG screenshot or PDF</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Or Instant Sample Syllabus Photo */}
+                <div className="pt-2">
+                  <p className="text-xs font-semibold text-text-muted mb-2 text-center">Or click a sample syllabus photo to import instant curriculum:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleUploadSyllabusPhoto('cs')}
+                      className="p-2.5 rounded-xl border border-border hover:border-primary/50 bg-card text-left flex items-center gap-2.5 transition-all"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">CS304R02 Syllabus</p>
+                        <p className="text-[10px] text-text-muted">Data Structures</p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUploadSyllabusPhoto('math')}
+                      className="p-2.5 rounded-xl border border-border hover:border-primary/50 bg-card text-left flex items-center gap-2.5 transition-all"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-indigo/10 flex items-center justify-center text-indigo">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">MAT202R01 Syllabus</p>
+                        <p className="text-[10px] text-text-muted">Multivariable Calc</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -407,7 +543,7 @@ export default function OnboardingPage() {
             </Button>
           )}
 
-          {step < 3 ? (
+          {step < 4 ? (
             <Button
               id="btn-next-step"
               type="button"
@@ -422,14 +558,14 @@ export default function OnboardingPage() {
             <Button
               id="btn-finish-onboarding"
               type="button"
-              disabled={loading || selectedSubjects.length === 0}
+              disabled={loading || isExtractingSyllabus}
               onClick={handleFinish}
               className="flex-1 h-11 gradient-primary text-white hover:opacity-90 glow-primary"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : null}
-              {loading ? 'Setting up…' : 'Launch StudyOS 🚀'}
+              {loading ? 'Setting up…' : 'Launch StudyOS'}
             </Button>
           )}
         </div>

@@ -5,7 +5,7 @@
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#060e20",
-  "theme_color": "#6366F1",
+  "theme_color": "#2563EB",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png", "purpose": "maskable any" },
